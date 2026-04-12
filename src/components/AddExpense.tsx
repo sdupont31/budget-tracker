@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { format } from 'date-fns';
 import { useExpenses } from '../hooks/useExpenses';
 import type { Category } from '../types';
@@ -43,7 +43,9 @@ export function AddExpense({ onClose }: AddExpenseProps) {
   const [date, setDate]               = useState(today);
   const [visible, setVisible]         = useState(false);
   const [submitting, setSubmitting]   = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const startY   = useRef(0);
 
   useEffect(() => {
     if (categories && categories.length > 0 && !categoryId) {
@@ -57,19 +59,11 @@ export function AddExpense({ onClose }: AddExpenseProps) {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // Remonte la sheet au-dessus du clavier virtuel (iOS visualViewport)
+  // Bloque le scroll de l'arrière-plan pendant que le sheet est ouvert
   useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const update = () => {
-      const kbH = window.innerHeight - vv.height - vv.pageTop;
-      setKeyboardHeight(Math.max(0, kbH));
-    };
-    vv.addEventListener('resize', update);
-    vv.addEventListener('scroll', update);
+    document.body.style.overflow = 'hidden';
     return () => {
-      vv.removeEventListener('resize', update);
-      vv.removeEventListener('scroll', update);
+      document.body.style.overflow = '';
     };
   }, []);
 
@@ -77,6 +71,16 @@ export function AddExpense({ onClose }: AddExpenseProps) {
     setVisible(false);
     setTimeout(onClose, 300);
   }
+
+  // Swipe vers le bas sur la drag handle → fermeture
+  const onTouchStart = (e: React.TouchEvent) => {
+    startY.current = e.touches[0].clientY;
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const deltaY = e.changedTouches[0].clientY - startY.current;
+    if (deltaY > 80) handleClose();
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -112,21 +116,17 @@ export function AddExpense({ onClose }: AddExpenseProps) {
     >
       {/* Sheet */}
       <div
+        ref={sheetRef}
         onClick={(e) => e.stopPropagation()}
         style={{
           position: 'fixed',
-          bottom: 80 + keyboardHeight,
-          left: '50%',
-          transform: visible
-            ? 'translateX(-50%) translateY(0)'
-            : 'translateX(-50%) translateY(100%)',
-          transition: keyboardHeight > 0
-            ? 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94), bottom 0.25s ease'
-            : 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)',
-          width: '100%',
-          maxWidth: 480,
-          maxHeight: `calc(100vh - 80px - 20px - ${keyboardHeight}px)`,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          maxHeight: '75vh',
           overflowY: 'auto',
+          transform: visible ? 'translateY(0)' : 'translateY(100%)',
+          transition: 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)',
           borderRadius: '20px 20px 0 0',
           backgroundColor: 'white',
           boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
@@ -135,8 +135,12 @@ export function AddExpense({ onClose }: AddExpenseProps) {
           zIndex: 101,
         }}
       >
-        {/* Drag handle */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 8px' }}>
+        {/* Drag handle — swipe ici pour fermer */}
+        <div
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 8px', cursor: 'grab' }}
+        >
           <div style={{
             width: 40, height: 4, borderRadius: 2, backgroundColor: '#D1D1D6',
           }} />
@@ -152,7 +156,7 @@ export function AddExpense({ onClose }: AddExpenseProps) {
 
         <form onSubmit={handleSubmit} noValidate style={{ padding: '0 20px' }}>
 
-          {/* Amount input */}
+          {/* Amount input — pas d'autoFocus, le clavier s'ouvre seulement au tap */}
           <div style={{
             display: 'flex',
             alignItems: 'baseline',
@@ -167,7 +171,6 @@ export function AddExpense({ onClose }: AddExpenseProps) {
               inputMode="decimal"
               value={amount.replace('.', ',')}
               onChange={(e) => {
-                // Keep only digits and one comma
                 const val = e.target.value.replace(/[^0-9,]/g, '');
                 const parts = val.split(',');
                 if (parts.length > 2) return;
@@ -175,7 +178,6 @@ export function AddExpense({ onClose }: AddExpenseProps) {
               }}
               placeholder="0"
               aria-label="Montant"
-              autoFocus
               style={{
                 fontSize: 48,
                 fontWeight: 700,
