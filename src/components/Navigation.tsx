@@ -36,19 +36,17 @@ interface Tab {
   SolidIcon:   React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }
 
-const LEFT_TABS: Tab[] = [
+const TABS: Tab[] = [
   { id: 'dashboard', label: 'Dashboard', OutlineIcon: ChartPieOutline,   SolidIcon: ChartPieSolid },
   { id: 'expenses',  label: 'Dépenses',  OutlineIcon: ListBulletOutline, SolidIcon: ListBulletSolid },
-];
-const RIGHT_TABS: Tab[] = [
-  { id: 'budget', label: 'Budgets', OutlineIcon: ChartBarOutline, SolidIcon: ChartBarSolid },
+  { id: 'budget',    label: 'Budgets',   OutlineIcon: ChartBarOutline,   SolidIcon: ChartBarSolid },
 ];
 
 export function Navigation({ current, onChange, onAdd }: NavigationProps) {
   const isDark = useDarkMode();
 
-  const bg          = isDark ? 'rgba(28,28,30,0.92)'  : 'rgba(255,255,255,0.92)';
-  const border      = isDark ? '1px solid #38383A'    : '1px solid #E5E5EA';
+  const bg          = isDark ? 'rgba(28,28,30,0.92)'   : 'rgba(255,255,255,0.92)';
+  const border      = isDark ? '1px solid #38383A'     : '1px solid #E5E5EA';
   const inactiveClr = isDark ? 'rgba(235,235,245,0.6)' : '#8E8E93';
 
   return (
@@ -62,25 +60,34 @@ export function Navigation({ current, onChange, onAdd }: NavigationProps) {
       borderTop: border,
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
+      fontFamily: '-apple-system,BlinkMacSystemFont,sans-serif',
+      zIndex: 1000,
       display: 'flex',
       alignItems: 'center',
-      zIndex: 1000,
-      fontFamily: '-apple-system,BlinkMacSystemFont,sans-serif',
     }}>
 
-      {/* Groupe gauche — flex:1, 2 onglets répartis */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'space-evenly', alignItems: 'center' }}>
-        {LEFT_TABS.map((tab) => (
-          <TabButton key={tab.id} tab={tab} current={current} onChange={onChange} inactiveColor={inactiveClr} />
-        ))}
-      </div>
+      {/* 4 flex tabs: Dashboard | Dépenses | Budgets | (placeholder) */}
+      {TABS.map((tab) => (
+        <TabButton
+          key={tab.id}
+          tab={tab}
+          current={current}
+          onChange={onChange}
+          inactiveColor={inactiveClr}
+        />
+      ))}
+      {/* Empty flex slot to mirror the left two tabs and keep math balanced */}
+      <div style={{ flex: 1 }} />
 
-      {/* Bouton + — taille fixe, ne flex pas */}
+      {/* + button — absolutely centred, never participates in flex layout */}
       <button
         type="button"
         onClick={onAdd}
         aria-label="Ajouter une dépense"
         style={{
+          position: 'absolute',
+          left: '50%',
+          transform: 'translateX(-50%)',
           width: 56,
           height: 56,
           borderRadius: 28,
@@ -91,23 +98,24 @@ export function Navigation({ current, onChange, onAdd }: NavigationProps) {
           alignItems: 'center',
           justifyContent: 'center',
           boxShadow: '0 4px 12px rgba(0,122,255,0.4)',
-          flexShrink: 0,
-          flexGrow: 0,
-          margin: '0 8px',
+          zIndex: 1,
         }}
       >
-        <span style={{ color: 'white', fontSize: 28, lineHeight: 1, fontWeight: 300, userSelect: 'none' }}>
+        <span style={{
+          color: 'white',
+          fontSize: 28,
+          fontWeight: 300,
+          lineHeight: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%',
+          marginTop: '-1px',
+        }}>
           +
         </span>
       </button>
-
-      {/* Groupe droite — même flex:1, 1 onglet + div vide pour équilibrer */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'space-evenly', alignItems: 'center' }}>
-        {RIGHT_TABS.map((tab) => (
-          <TabButton key={tab.id} tab={tab} current={current} onChange={onChange} inactiveColor={inactiveClr} />
-        ))}
-        <div style={{ minWidth: 60 }} />
-      </div>
 
     </nav>
   );
@@ -134,15 +142,16 @@ function TabButton({ tab, current, onChange, inactiveColor }: TabButtonProps) {
       aria-label={tab.label}
       aria-current={isActive ? 'page' : undefined}
       style={{
+        flex: 1,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: 4,
-        minWidth: 60,
-        cursor: 'pointer',
+        padding: '4px 0',
         background: 'none',
         border: 'none',
-        padding: '4px 0',
+        cursor: 'pointer',
       }}
     >
       <Icon style={{ width: 24, height: 24, color }} />

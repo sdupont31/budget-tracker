@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+#root {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ─── Design tokens (Apple system colors) ──────────────────────────────── */
 @layer base {
   :root {
