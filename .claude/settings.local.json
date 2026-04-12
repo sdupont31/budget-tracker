@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat /Users/stephanedupont/Documents/Projets/budget-tracker/tailwind.config.*)",
+      "Bash(cat /Users/stephanedupont/Documents/Projets/budget-tracker/postcss.config.*)",
+      "Bash(ls /Users/stephanedupont/Documents/Projets/budget-tracker/postcss.config.*)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

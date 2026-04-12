@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design tokens (Apple system colors) ──────────────────────────────── */
+@layer base {
+  :root {
+    --color-bg-primary:       #F2F2F7;
+    --color-bg-secondary:     #FFFFFF;
+    --color-bg-tertiary:      #E5E5EA;
+    --color-label-primary:    #000000;
+    --color-label-secondary:  #3C3C43;
+    --color-label-tertiary:   #3C3C4399;
+    --color-separator:        #C6C6C8;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg-primary:      #000000;
+      --color-bg-secondary:    #1C1C1E;
+      --color-bg-tertiary:     #2C2C2E;
+      --color-label-primary:   #FFFFFF;
+      --color-label-secondary: #EBEBF5CC;
+      --color-label-tertiary:  #EBEBF599;
+      --color-separator:       #38383A;
+    }
+  }
+
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-label-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+                 'Helvetica Neue', sans-serif;
+  }
+}
+
+/* ─── Composants Apple ──────────────────────────────────────────────────── */
+@layer components {
+
+  /* Carte glassmorphism */
+  .apple-card {
+    @apply rounded-apple bg-white/80 backdrop-blur-apple
+           shadow-apple border border-white/20;
+  }
+
+  /* Bouton primaire Apple */
+  .apple-btn-primary {
+    @apply inline-flex items-center justify-center
+           px-5 py-[11px]
+           rounded-apple bg-apple-blue text-white
+           text-apple-subhead font-semibold tracking-[-0.01em]
+           shadow-apple-sm
+           transition-all duration-apple ease-apple
+           active:scale-[0.97] hover:brightness-110
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-apple-blue/50;
+  }
+
+  /* Bouton secondaire */
+  .apple-btn-secondary {
+    @apply inline-flex items-center justify-center
+           px-5 py-[11px]
+           rounded-apple bg-apple-gray-5 text-apple-blue
+           text-apple-subhead font-semibold
+           transition-all duration-apple ease-apple
+           active:scale-[0.97] hover:bg-apple-gray-4
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-apple-blue/50;
+  }
+
+  /* Champ de saisie Apple */
+  .apple-input {
+    @apply w-full px-4 py-3
+           rounded-apple
+           bg-apple-gray-6 border border-apple-gray-4
+           text-apple-subhead
+           placeholder:text-apple-gray-2
+           transition-all duration-apple ease-apple
+           focus:outline-none
+           focus:border-apple-blue focus:ring-2 focus:ring-apple-blue/20;
+  }
+
+  /* Label de section style iOS (ex: "DÉPENSES RÉCENTES") */
+  .apple-section-label {
+    @apply text-apple-footnote font-semibold uppercase
+           tracking-[0.06em] text-apple-gray-1 px-4 mb-2;
+  }
+
+  /* Séparateur avec indent iOS */
+  .apple-separator {
+    @apply h-px ml-4;
+    background-color: var(--color-separator);
+  }
+}
+
+/* ─── Dark mode overrides (CSS natif pour éviter @apply dans @media) ────── */
+@media (prefers-color-scheme: dark) {
+  .apple-card {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.10);
+  }
+
+  .apple-btn-secondary {
+    background-color: rgba(142, 142, 147, 0.20); /* apple-gray-1 / 20% */
+    color: #007AFF;
+  }
+
+  .apple-btn-secondary:hover {
+    background-color: rgba(142, 142, 147, 0.30);
+  }
+
+  .apple-input {
+    background-color: rgba(142, 142, 147, 0.10);
+    border-color: rgba(142, 142, 147, 0.20);
+    color: var(--color-label-primary);
+  }
+
+  .apple-input::placeholder {
+    color: #8E8E93; /* apple-gray-1 */
+  }
+}
