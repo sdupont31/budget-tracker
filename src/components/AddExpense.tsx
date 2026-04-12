@@ -44,8 +44,9 @@ export function AddExpense({ onClose }: AddExpenseProps) {
   const [visible, setVisible]         = useState(false);
   const [submitting, setSubmitting]   = useState(false);
 
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const startY   = useRef(0);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const sheetRef   = useRef<HTMLDivElement>(null);
+  const startY     = useRef(0);
 
   useEffect(() => {
     if (categories && categories.length > 0 && !categoryId) {
@@ -65,6 +66,19 @@ export function AddExpense({ onClose }: AddExpenseProps) {
     return () => {
       document.body.style.overflow = '';
     };
+  }, []);
+
+  // Bloque touchmove sur l'overlay (listener non-passif requis pour preventDefault)
+  useEffect(() => {
+    const el = overlayRef.current;
+    if (!el) return;
+    const block = (e: TouchEvent) => {
+      // Laisse le scroll interne du sheet fonctionner, bloque tout le reste
+      if (sheetRef.current?.contains(e.target as Node)) return;
+      e.preventDefault();
+    };
+    el.addEventListener('touchmove', block, { passive: false });
+    return () => el.removeEventListener('touchmove', block);
   }, []);
 
   function handleClose() {
@@ -102,6 +116,7 @@ export function AddExpense({ onClose }: AddExpenseProps) {
   return (
     /* Overlay */
     <div
+      ref={overlayRef}
       onClick={handleClose}
       style={{
         position: 'fixed',
