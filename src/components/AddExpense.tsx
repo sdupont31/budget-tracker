@@ -129,7 +129,7 @@ export function AddExpense({ onClose }: AddExpenseProps) {
         transition: 'background-color 0.3s ease',
       }}
     >
-      {/* Sheet */}
+      {/* Sheet — flex colonne : header fixe | contenu scrollable | bouton fixe */}
       <div
         ref={sheetRef}
         onClick={(e) => e.stopPropagation()}
@@ -139,14 +139,14 @@ export function AddExpense({ onClose }: AddExpenseProps) {
           left: 0,
           right: 0,
           maxHeight: '75vh',
-          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
           transform: visible ? 'translateY(0)' : 'translateY(100%)',
           transition: 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)',
           borderRadius: '20px 20px 0 0',
           backgroundColor: 'white',
           boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
           fontFamily: font,
-          boxSizing: 'border-box',
           zIndex: 101,
         }}
       >
@@ -154,139 +154,139 @@ export function AddExpense({ onClose }: AddExpenseProps) {
         <div
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
-          style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 8px', cursor: 'grab' }}
+          style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 8px', cursor: 'grab', flexShrink: 0 }}
         >
-          <div style={{
-            width: 40, height: 4, borderRadius: 2, backgroundColor: '#D1D1D6',
-          }} />
+          <div style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#D1D1D6' }} />
         </div>
 
         {/* Title */}
         <h2 style={{
           fontSize: 17, fontWeight: 600, textAlign: 'center',
-          color: '#000000', margin: '0 0 24px', padding: '0 20px',
+          color: '#000000', margin: '0 0 24px', padding: '0 20px', flexShrink: 0,
         }}>
           Nouvelle dépense
         </h2>
 
-        <form onSubmit={handleSubmit} noValidate style={{ padding: '0 20px' }}>
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}
+        >
+          {/* Zone scrollable */}
+          <div style={{ overflowY: 'auto', flex: 1, padding: '0 20px' }}>
 
-          {/* Amount input — pas d'autoFocus, le clavier s'ouvre seulement au tap */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'baseline',
-            justifyContent: 'center',
-            gap: 4,
-            marginBottom: 32,
-            position: 'relative',
-            zIndex: 10,
-          }}>
+            {/* Amount input — pas d'autoFocus, le clavier s'ouvre seulement au tap */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              justifyContent: 'center',
+              gap: 4,
+              marginBottom: 32,
+            }}>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={amount.replace('.', ',')}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9,]/g, '');
+                  const parts = val.split(',');
+                  if (parts.length > 2) return;
+                  setAmount(val);
+                }}
+                placeholder="0"
+                aria-label="Montant"
+                style={{
+                  fontSize: 48,
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  width: 200,
+                  color: '#000000',
+                  cursor: 'text',
+                  WebkitAppearance: 'none',
+                  appearance: 'none',
+                  fontFamily: font,
+                }}
+              />
+              <span style={{ fontSize: 28, fontWeight: 600, color: '#8E8E93', lineHeight: 1 }}>
+                €
+              </span>
+            </div>
+
+            {/* Category grid 4×2 */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: 12,
+              maxWidth: 440,
+              margin: '0 auto 24px',
+            }}>
+              {[...categories].sort((a, b) => (a.order ?? 99) - (b.order ?? 99)).map((cat: Category) => {
+                const selected = categoryId === String(cat.id);
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategoryId(String(cat.id))}
+                    style={{
+                      display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', gap: 4,
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      padding: 0,
+                    }}
+                  >
+                    <span style={{
+                      width: 48, height: 48, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 22,
+                      backgroundColor: selected ? `${cat.color}33` : `${cat.color}1A`,
+                      border: `2px solid ${selected ? '#007AFF' : 'transparent'}`,
+                      boxSizing: 'border-box',
+                      transition: 'border-color 0.15s',
+                    }}>
+                      {cat.icon}
+                    </span>
+                    <span style={{
+                      fontSize: 11, fontWeight: 500,
+                      color: selected ? '#007AFF' : '#8E8E93',
+                      textAlign: 'center',
+                      maxWidth: 56, overflow: 'hidden',
+                      textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      fontFamily: font,
+                    }}>
+                      {cat.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Description */}
             <input
               type="text"
-              inputMode="decimal"
-              value={amount.replace('.', ',')}
-              onChange={(e) => {
-                const val = e.target.value.replace(/[^0-9,]/g, '');
-                const parts = val.split(',');
-                if (parts.length > 2) return;
-                setAmount(val);
-              }}
-              placeholder="0"
-              aria-label="Montant"
-              style={{
-                fontSize: 48,
-                fontWeight: 700,
-                textAlign: 'center',
-                border: 'none',
-                outline: 'none',
-                background: 'transparent',
-                width: 200,
-                color: '#000000',
-                cursor: 'text',
-                WebkitAppearance: 'none',
-                appearance: 'none',
-                pointerEvents: 'auto',
-                zIndex: 10,
-                fontFamily: font,
-              }}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Description..."
+              style={inputStyle}
             />
-            <span style={{ fontSize: 28, fontWeight: 600, color: '#8E8E93', lineHeight: 1 }}>
-              €
-            </span>
-          </div>
 
-          {/* Category grid 4×2 */}
+            {/* Date */}
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              style={{ ...inputStyle, marginBottom: 8 }}
+            />
+
+          </div>{/* fin zone scrollable */}
+
+          {/* Bouton toujours visible — en dehors de la zone scrollable */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 12,
-            maxWidth: 440,
-            margin: '0 auto 24px',
-          }}>
-            {[...categories].sort((a, b) => (a.order ?? 99) - (b.order ?? 99)).map((cat: Category) => {
-              const selected = categoryId === String(cat.id);
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setCategoryId(String(cat.id))}
-                  style={{
-                    display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', gap: 4,
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    padding: 0,
-                  }}
-                >
-                  <span style={{
-                    width: 48, height: 48, borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 22,
-                    backgroundColor: selected ? `${cat.color}33` : `${cat.color}1A`,
-                    border: `2px solid ${selected ? '#007AFF' : 'transparent'}`,
-                    boxSizing: 'border-box',
-                    transition: 'border-color 0.15s',
-                  }}>
-                    {cat.icon}
-                  </span>
-                  <span style={{
-                    fontSize: 11, fontWeight: 500,
-                    color: selected ? '#007AFF' : '#8E8E93',
-                    textAlign: 'center',
-                    maxWidth: 56, overflow: 'hidden',
-                    textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    fontFamily: font,
-                  }}>
-                    {cat.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Description */}
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Description..."
-            style={inputStyle}
-          />
-
-          {/* Date */}
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            style={{ ...inputStyle, marginBottom: 24 }}
-          />
-
-          {/* Submit — sticky so it stays visible when scrolling */}
-          <div style={{
-            position: 'sticky',
-            bottom: 0,
+            flexShrink: 0,
+            padding: '12px 20px 16px',
             backgroundColor: 'white',
-            padding: '12px 0 16px',
-            marginTop: 16,
           }}>
             <button
               type="submit"
