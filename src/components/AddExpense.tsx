@@ -43,6 +43,7 @@ export function AddExpense({ onClose }: AddExpenseProps) {
   const [date, setDate]               = useState(today);
   const [visible, setVisible]         = useState(false);
   const [submitting, setSubmitting]   = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
     if (categories && categories.length > 0 && !categoryId) {
@@ -54,6 +55,22 @@ export function AddExpense({ onClose }: AddExpenseProps) {
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
     return () => cancelAnimationFrame(id);
+  }, []);
+
+  // Remonte la sheet au-dessus du clavier virtuel (iOS visualViewport)
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const kbH = window.innerHeight - vv.height - vv.pageTop;
+      setKeyboardHeight(Math.max(0, kbH));
+    };
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
   }, []);
 
   function handleClose() {
@@ -98,15 +115,17 @@ export function AddExpense({ onClose }: AddExpenseProps) {
         onClick={(e) => e.stopPropagation()}
         style={{
           position: 'fixed',
-          bottom: 80,
+          bottom: 80 + keyboardHeight,
           left: '50%',
           transform: visible
             ? 'translateX(-50%) translateY(0)'
             : 'translateX(-50%) translateY(100%)',
-          transition: 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)',
+          transition: keyboardHeight > 0
+            ? 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94), bottom 0.25s ease'
+            : 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)',
           width: '100%',
           maxWidth: 480,
-          maxHeight: 'calc(100vh - 80px - 20px)',
+          maxHeight: `calc(100vh - 80px - 20px - ${keyboardHeight}px)`,
           overflowY: 'auto',
           borderRadius: '20px 20px 0 0',
           backgroundColor: 'white',
