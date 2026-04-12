@@ -66,24 +66,31 @@ export function Navigation({ current, onChange, onAdd }: NavigationProps) {
       alignItems: 'center',
     }}>
 
-      {/* Left: Dashboard + Dépenses — 2 slots égaux */}
-      {TABS.slice(0, 2).map((tab) => (
-        <TabButton
-          key={tab.id}
-          tab={tab}
-          current={current}
-          onChange={onChange}
-          inactiveColor={inactiveClr}
-        />
-      ))}
-      {/* Slot vide central — le + flotte exactement au-dessus (left:50%) */}
-      <div style={{ flex: 1 }} />
-      {/* Right: Budgets — symétrique à Dashboard */}
+      {/* Dashboard — flex:2 → centre à 12.5% */}
+      <TabButton
+        tab={TABS[0]}
+        current={current}
+        onChange={onChange}
+        inactiveColor={inactiveClr}
+        flexValue={2}
+      />
+      {/* Dépenses — flex:1 → centre à 31.25% (milieu exact entre Dashboard et +) */}
+      <TabButton
+        tab={TABS[1]}
+        current={current}
+        onChange={onChange}
+        inactiveColor={inactiveClr}
+        flexValue={1}
+      />
+      {/* Spacer flex:3 — le + absolu flotte au-dessus du centre (50%) */}
+      <div style={{ flex: 3 }} />
+      {/* Budgets — flex:2 → centre à 87.5% (symétrique à Dashboard) */}
       <TabButton
         tab={TABS[2]}
         current={current}
         onChange={onChange}
         inactiveColor={inactiveClr}
+        flexValue={2}
       />
 
       {/* + button — absolutely centred, never participates in flex layout */}
@@ -135,9 +142,10 @@ interface TabButtonProps {
   current: string;
   onChange: (tab: string) => void;
   inactiveColor: string;
+  flexValue?: number;
 }
 
-function TabButton({ tab, current, onChange, inactiveColor }: TabButtonProps) {
+function TabButton({ tab, current, onChange, inactiveColor, flexValue = 1 }: TabButtonProps) {
   const isActive = current === tab.id;
   const Icon     = isActive ? tab.SolidIcon : tab.OutlineIcon;
   const color    = isActive ? '#007AFF' : inactiveColor;
@@ -149,7 +157,7 @@ function TabButton({ tab, current, onChange, inactiveColor }: TabButtonProps) {
       aria-label={tab.label}
       aria-current={isActive ? 'page' : undefined}
       style={{
-        flex: 1,
+        flex: flexValue,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
