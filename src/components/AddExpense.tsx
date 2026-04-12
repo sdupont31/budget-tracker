@@ -282,10 +282,10 @@ export function AddExpense({ onClose }: AddExpenseProps) {
 
           </div>{/* fin zone scrollable */}
 
-          {/* Bouton toujours visible — en dehors de la zone scrollable */}
+          {/* Bouton toujours visible — padding-bottom = nav (80px) + respiration (16px) */}
           <div style={{
             flexShrink: 0,
-            padding: '12px 20px 16px',
+            padding: '12px 20px 96px',
             backgroundColor: 'white',
           }}>
             <button
