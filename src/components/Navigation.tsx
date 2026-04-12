@@ -66,8 +66,8 @@ export function Navigation({ current, onChange, onAdd }: NavigationProps) {
       alignItems: 'center',
     }}>
 
-      {/* 4 flex tabs: Dashboard | Dépenses | Budgets | (placeholder) */}
-      {TABS.map((tab) => (
+      {/* Left: Dashboard + Dépenses — 2 slots égaux */}
+      {TABS.slice(0, 2).map((tab) => (
         <TabButton
           key={tab.id}
           tab={tab}
@@ -76,8 +76,15 @@ export function Navigation({ current, onChange, onAdd }: NavigationProps) {
           inactiveColor={inactiveClr}
         />
       ))}
-      {/* Empty flex slot to mirror the left two tabs and keep math balanced */}
+      {/* Slot vide central — le + flotte exactement au-dessus (left:50%) */}
       <div style={{ flex: 1 }} />
+      {/* Right: Budgets — symétrique à Dashboard */}
+      <TabButton
+        tab={TABS[2]}
+        current={current}
+        onChange={onChange}
+        inactiveColor={inactiveClr}
+      />
 
       {/* + button — absolutely centred, never participates in flex layout */}
       <button
