@@ -253,7 +253,6 @@ export function Dashboard() {
                 data={pieData} cx="50%" cy="50%"
                 innerRadius={55} outerRadius={85}
                 paddingAngle={3} dataKey="value" strokeWidth={0}
-                activeIndex={activePieIndex}
                 onMouseEnter={(_, index) => setActivePieIndex(index)}
                 onMouseLeave={() => setActivePieIndex(undefined)}
               >
