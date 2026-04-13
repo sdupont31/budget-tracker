@@ -158,6 +158,8 @@ export function Dashboard() {
   // Merge expenses + budgets into LineChart data
   const lineData = lineBase.map((d, i) => ({ ...d, budget: monthBudgets[i] ?? 0 }));
 
+  const [activePieIndex, setActivePieIndex] = useState<number | undefined>(undefined);
+
   const monthLabel     = cap(format(now, 'MMMM yyyy', { locale: fr }));
   const hasExpenses    = thisMonthExpenses.length > 0;
   const remaining      = totalBudget > 0 ? totalBudget - total : null;
@@ -251,8 +253,18 @@ export function Dashboard() {
                 data={pieData} cx="50%" cy="50%"
                 innerRadius={55} outerRadius={85}
                 paddingAngle={3} dataKey="value" strokeWidth={0}
+                activeIndex={activePieIndex}
+                onMouseEnter={(_, index) => setActivePieIndex(index)}
+                onMouseLeave={() => setActivePieIndex(undefined)}
               >
-                {pieData.map((entry) => <Cell key={entry.id} fill={entry.color} />)}
+                {pieData.map((entry, index) => (
+                  <Cell
+                    key={entry.id}
+                    fill={entry.color}
+                    opacity={activePieIndex === undefined || activePieIndex === index ? 1 : 0.4}
+                    style={{ transition: 'opacity 0.2s ease' }}
+                  />
+                ))}
               </Pie>
               <Tooltip content={<PieTooltip />} />
             </PieChart>
