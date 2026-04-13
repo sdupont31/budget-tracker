@@ -45,6 +45,10 @@ html, body {
     -webkit-touch-callout: none;
   }
 
+  svg, svg * {
+    outline: none;
+  }
+
   body {
     background-color: var(--color-bg-primary);
     color: var(--color-label-primary);
