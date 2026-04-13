@@ -5,10 +5,12 @@ import { ExpenseList } from './components/ExpenseList';
 import { AddExpense } from './components/AddExpense';
 import { Budget } from './components/Budget';
 import { Navigation } from './components/Navigation';
+import type { Expense } from './types';
 
 export default function App() {
-  const [tab, setTab]       = useState('dashboard');
-  const [showAdd, setShowAdd] = useState(false);
+  const [tab, setTab]               = useState('dashboard');
+  const [showAdd, setShowAdd]       = useState(false);
+  const [editExpense, setEditExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
     seedDatabase();
@@ -27,7 +29,9 @@ export default function App() {
       fontFamily: '-apple-system,BlinkMacSystemFont,sans-serif',
     }}>
       {tab === 'dashboard' && <Dashboard />}
-      {tab === 'expenses'  && <ExpenseList />}
+      {tab === 'expenses'  && (
+        <ExpenseList onEdit={(expense) => setEditExpense(expense)} />
+      )}
       {tab === 'budget'    && <Budget />}
 
       <Navigation
@@ -36,7 +40,16 @@ export default function App() {
         onAdd={() => setShowAdd(true)}
       />
 
-      {showAdd && <AddExpense onClose={() => setShowAdd(false)} />}
+      {showAdd && (
+        <AddExpense onClose={() => setShowAdd(false)} />
+      )}
+
+      {editExpense && (
+        <AddExpense
+          expense={editExpense}
+          onClose={() => setEditExpense(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { format, isToday, isYesterday, parseISO, addMonths, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import { useExpenses } from '../hooks/useExpenses';
 import type { Category, Expense } from '../types';
@@ -30,7 +30,11 @@ function groupByDate(expenses: Expense[]): Map<string, Expense[]> {
 
 /* ── ExpenseList ─────────────────────────────────────────────────────────── */
 
-export function ExpenseList() {
+interface ExpenseListProps {
+  onEdit: (expense: Expense) => void;
+}
+
+export function ExpenseList({ onEdit }: ExpenseListProps) {
   const [selectedMonth, setSelectedMonth] = useState<string>(
     () => format(new Date(), 'yyyy-MM'),
   );
@@ -148,6 +152,7 @@ export function ExpenseList() {
                     expense={expense}
                     category={categoryMap.get(expense.categoryId)}
                     onDelete={deleteExpense}
+                    onEdit={onEdit}
                     animationDelay={idx * 40}
                     isFirst={idx === 0}
                   />
@@ -165,18 +170,20 @@ export function ExpenseList() {
 
 type SwipeState = 'idle' | 'revealed' | 'removing';
 
-const REVEAL_PX = 80;
-const DELETE_PX = 150;
+const BTN_W     = 80;   // largeur de chaque bouton action
+const REVEAL_PX = BTN_W * 2;  // 160px — révèle Edit + Supprimer
+const DELETE_PX = 240;  // swipe complet → suppression directe
 
 interface ExpenseRowProps {
   expense: Expense;
   category: Category | undefined;
   onDelete: (id: string) => Promise<void>;
+  onEdit: (expense: Expense) => void;
   animationDelay: number;
   isFirst: boolean;
 }
 
-function ExpenseRow({ expense, category, onDelete, animationDelay, isFirst }: ExpenseRowProps) {
+function ExpenseRow({ expense, category, onDelete, onEdit, animationDelay, isFirst }: ExpenseRowProps) {
   const [hovered, setHovered]       = useState(false);
   const [swipeState, setSwipeState] = useState<SwipeState>('idle');
   const [offsetX, setOffsetX]       = useState(0);
@@ -280,22 +287,46 @@ function ExpenseRow({ expense, category, onDelete, animationDelay, isFirst }: Ex
         animationDelay: `${animationDelay}ms`,
       }}
     >
-      {/* Red delete action (revealed on swipe) */}
+      {/* Actions révélées au swipe : [Modifier (bleu)] [Supprimer (rouge)] */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute', top: 0, right: 0, bottom: 0, width: REVEAL_PX,
-          backgroundColor: '#FF3B30',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          display: 'flex',
         }}
       >
+        {/* Bouton Modifier */}
+        <button
+          type="button"
+          onClick={() => {
+            onEdit(expense);
+            // Referme le swipe
+            liveOffset.current = 0;
+            setOffsetX(0);
+            setSwipeState('idle');
+          }}
+          tabIndex={swipeState === 'revealed' ? 0 : -1}
+          aria-label="Modifier"
+          style={{
+            width: BTN_W, border: 'none', backgroundColor: '#007AFF',
+            cursor: 'pointer', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 2, color: '#ffffff',
+          }}
+        >
+          <PencilSquareIcon width={20} height={20} />
+          <span style={{ fontSize: 11, fontWeight: 600, fontFamily: font, lineHeight: 1 }}>
+            Modifier
+          </span>
+        </button>
+
+        {/* Bouton Supprimer */}
         <button
           type="button"
           onClick={handleDelete}
           tabIndex={swipeState === 'revealed' ? 0 : -1}
           aria-label="Supprimer"
           style={{
-            width: '100%', height: '100%', border: 'none', background: 'none',
+            width: BTN_W, border: 'none', backgroundColor: '#FF3B30',
             cursor: 'pointer', display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center', gap: 2, color: '#ffffff',
           }}

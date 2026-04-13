@@ -3,8 +3,11 @@ import { format } from 'date-fns';
 import { useExpenses } from '../hooks/useExpenses';
 import type { Category } from '../types';
 
+import type { Expense } from '../types';
+
 interface AddExpenseProps {
   onClose: () => void;
+  expense?: Expense;
 }
 
 const font = '-apple-system,BlinkMacSystemFont,sans-serif';
@@ -25,8 +28,9 @@ const inputStyle: React.CSSProperties = {
   WebkitAppearance: 'none',
 };
 
-export function AddExpense({ onClose }: AddExpenseProps) {
-  const { addExpense, categories: rawCategories } = useExpenses();
+export function AddExpense({ onClose, expense }: AddExpenseProps) {
+  const { addExpense, updateExpense, categories: rawCategories } = useExpenses();
+  const isEditing = Boolean(expense);
 
   // Deduplicate by name — guards against duplicate DB entries (unique IDs, same name)
   const seenNames = new Set<string>();
@@ -37,10 +41,10 @@ export function AddExpense({ onClose }: AddExpenseProps) {
   });
 
   const today = format(new Date(), 'yyyy-MM-dd');
-  const [amount, setAmount]           = useState('');
-  const [categoryId, setCategoryId]   = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate]               = useState(today);
+  const [amount, setAmount]           = useState(expense ? String(expense.amount) : '');
+  const [categoryId, setCategoryId]   = useState(expense?.categoryId ?? '');
+  const [description, setDescription] = useState(expense?.description ?? '');
+  const [date, setDate]               = useState(expense?.date ?? today);
   const [visible, setVisible]         = useState(false);
   const [submitting, setSubmitting]   = useState(false);
 
@@ -101,12 +105,17 @@ export function AddExpense({ onClose }: AddExpenseProps) {
     if (!amount || !categoryId || submitting) return;
     setSubmitting(true);
     try {
-      await addExpense({
+      const data = {
         amount: parseFloat(amount.replace(',', '.')),
         categoryId,
         description,
         date,
-      });
+      };
+      if (isEditing && expense?.id) {
+        await updateExpense(expense.id, data);
+      } else {
+        await addExpense(data);
+      }
       handleClose();
     } finally {
       setSubmitting(false);
@@ -163,8 +172,11 @@ export function AddExpense({ onClose }: AddExpenseProps) {
         <h2 style={{
           fontSize: 17, fontWeight: 600, textAlign: 'center',
           color: '#000000', margin: '0 0 24px', padding: '0 20px', flexShrink: 0,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
-          Nouvelle dépense
+          {isEditing
+            ? (expense?.description || 'Modifier la dépense')
+            : 'Nouvelle dépense'}
         </h2>
 
         <form
@@ -305,7 +317,7 @@ export function AddExpense({ onClose }: AddExpenseProps) {
                 transition: 'background-color 0.15s',
               }}
             >
-              {submitting ? 'Ajout…' : 'Ajouter'}
+              {submitting ? '…' : isEditing ? 'Valider' : 'Ajouter'}
             </button>
           </div>
 
