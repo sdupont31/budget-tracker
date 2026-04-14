@@ -8,7 +8,7 @@ export type CategoryColor =
   | '#5856D6' // indigo
   | '#5AC8FA' // teal
   | '#FFD60A' // yellow
-  | '#FF3B30' // red
+  | '#A2845E' // brown
   | '#8E8E93'; // gray
 
 export interface Category {
