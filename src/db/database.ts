@@ -56,42 +56,17 @@ const DEFAULT_CATEGORIES: Category[] = [
 export async function seedDatabase(): Promise<void> {
   try {
     const all = await db.categories.toArray();
-    const existingByName = new Map(all.map((c) => [c.name, c]));
 
     if (all.length === 0) {
       await db.categories.bulkAdd(DEFAULT_CATEGORIES);
       return;
     }
 
-    // Add only missing categories
-    for (const defaultCat of DEFAULT_CATEGORIES) {
-      if (!existingByName.has(defaultCat.name)) {
-        await db.categories.add(defaultCat);
-      }
-    }
+    // ── Migrations AVANT le loop "add missing" ────────────────────────────
+    // (si elles tournent après, l'add tente d'insérer 'cat-alimentation'
+    //  en doublon → ConstraintError → catch absorbe tout → rien ne s'exécute)
 
-    // Remove duplicates (same name, keep first occurrence)
-    const final = await db.categories.toArray();
-    const seen = new Set<string>();
-    for (const cat of final) {
-      if (seen.has(cat.name)) {
-        await db.categories.delete(cat.id!);
-      } else {
-        seen.add(cat.name);
-      }
-    }
-
-    // Sync colors: ensure each category matches its DEFAULT_CATEGORIES color
-    const defaultById = new Map(DEFAULT_CATEGORIES.map((c) => [c.id!, c]));
-    const current = await db.categories.toArray();
-    for (const cat of current) {
-      const def = defaultById.get(cat.id!);
-      if (def && cat.color !== def.color) {
-        await db.categories.update(cat.id!, { color: def.color });
-      }
-    }
-
-    // Migration : renommage Alimentation → Courses
+    // Renommage Alimentation → Courses
     const alimentation = await db.categories.where('id').equals('cat-alimentation').first();
     if (alimentation && alimentation.name === 'Alimentation') {
       await db.categories.update('cat-alimentation', { name: 'Courses', icon: '🛒' });
@@ -105,7 +80,7 @@ export async function seedDatabase(): Promise<void> {
       });
     }
 
-    // Mise à jour des orders des catégories existantes
+    // Mise à jour des orders
     const orderUpdates: Record<string, number> = {
       'cat-shopping':    7,
       'cat-abonnements': 8,
@@ -114,6 +89,36 @@ export async function seedDatabase(): Promise<void> {
     };
     for (const [id, order] of Object.entries(orderUpdates)) {
       await db.categories.update(id, { order });
+    }
+
+    // ── Add only missing categories (par ID) ──────────────────────────────
+    const afterMigration = await db.categories.toArray();
+    const existingIds = new Set(afterMigration.map((c) => c.id!));
+    for (const defaultCat of DEFAULT_CATEGORIES) {
+      if (!existingIds.has(defaultCat.id!)) {
+        await db.categories.add(defaultCat);
+      }
+    }
+
+    // ── Remove duplicates (même nom, garde la première occurrence) ─────────
+    const final = await db.categories.toArray();
+    const seen  = new Set<string>();
+    for (const cat of final) {
+      if (seen.has(cat.name)) {
+        await db.categories.delete(cat.id!);
+      } else {
+        seen.add(cat.name);
+      }
+    }
+
+    // ── Sync colors ────────────────────────────────────────────────────────
+    const defaultById = new Map(DEFAULT_CATEGORIES.map((c) => [c.id!, c]));
+    const current     = await db.categories.toArray();
+    for (const cat of current) {
+      const def = defaultById.get(cat.id!);
+      if (def && cat.color !== def.color) {
+        await db.categories.update(cat.id!, { color: def.color });
+      }
     }
   } catch (e) {
     console.error('seedDatabase error:', e);
