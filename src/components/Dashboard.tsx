@@ -172,10 +172,6 @@ export function Dashboard() {
   const isCurrentMonth = selectedMonth >= format(now, 'yyyy-MM');
   const hasExpenses    = thisMonthExpenses.length > 0;
   const remaining      = totalBudget > 0 ? totalBudget - total : null;
-  const variationColor = variation === null ? '#8E8E93' : variation > 0 ? '#FF3B30' : '#34C759';
-  const variationLabel = variation === null
-    ? 'premier mois'
-    : `${variation > 0 ? '+' : ''}${variation.toFixed(1)}% vs mois dernier`;
 
   /* ── Header ─────────────────────────────────────────────────────────────── */
   const header = (
