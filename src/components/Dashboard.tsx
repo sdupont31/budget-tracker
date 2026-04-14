@@ -179,34 +179,46 @@ export function Dashboard() {
 
   /* ── Header ─────────────────────────────────────────────────────────────── */
   const header = (
-    <div style={{ maxWidth: 480, margin: '0 auto', padding: '60px 20px 20px', textAlign: 'center' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 4 }}>
+    <div style={{ textAlign: 'center', padding: '60px 20px 20px' }}>
+
+      {/* Navigation mois */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 8 }}>
         <button onClick={prevMonth} style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          color: '#007AFF', fontSize: 20, padding: '0 8px',
+          color: '#007AFF', fontSize: 24, padding: '0 8px', lineHeight: 1,
         }}>‹</button>
         <span style={{
           fontSize: 13, fontWeight: 600, color: '#8E8E93',
           letterSpacing: '0.06em', textTransform: 'uppercase',
-          minWidth: 120, textAlign: 'center', fontFamily: font,
+          minWidth: 140, textAlign: 'center', fontFamily: font,
         }}>
           {format(new Date(selectedMonth + '-01'), 'MMMM yyyy', { locale: fr })}
         </span>
-        <button onClick={nextMonth} disabled={isCurrentMonth} style={{
-          background: 'none', border: 'none', cursor: isCurrentMonth ? 'default' : 'pointer',
+        <button onClick={nextMonth} style={{
+          background: 'none', border: 'none',
+          cursor: isCurrentMonth ? 'default' : 'pointer',
           color: isCurrentMonth ? '#C7C7CC' : '#007AFF',
-          fontSize: 20, padding: '0 8px',
+          fontSize: 24, padding: '0 8px', lineHeight: 1,
         }}>›</button>
       </div>
-      <p style={{
-        fontSize: 34, fontWeight: 700, letterSpacing: '-0.02em',
-        color: '#000000', fontFamily: font, margin: '0 0 4px', lineHeight: 1.1,
+
+      {/* Grand total */}
+      <div style={{
+        fontSize: 48, fontWeight: 700, letterSpacing: '-0.03em',
+        color: '#000000', lineHeight: 1, marginBottom: 8, fontFamily: font,
       }}>
-        {eur(total)}
-      </p>
-      <p style={{ fontSize: 15, color: variationColor, fontFamily: font, margin: 0 }}>
-        {variationLabel}
-      </p>
+        {total.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+      </div>
+
+      {/* Variation */}
+      <div style={{
+        fontSize: 15, fontWeight: 500, fontFamily: font,
+        color: variation === null ? '#8E8E93' : variation > 0 ? '#FF3B30' : '#34C759',
+      }}>
+        {variation === null
+          ? 'premier mois'
+          : `${variation > 0 ? '▲' : '▼'} ${Math.abs(variation).toFixed(1)}% vs mois précédent`}
+      </div>
     </div>
   );
 
