@@ -46,7 +46,7 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: 'cat-transport',    name: 'Transport',     color: '#34C759', icon: '🚗', order: 3 },
   { id: 'cat-sante',        name: 'Santé',         color: '#FF2D55', icon: '🏥', order: 4 },
   { id: 'cat-loisirs',      name: 'Loisirs',       color: '#AF52DE', icon: '🎭', order: 5 },
-  { id: 'cat-restaurant',   name: 'Restaurant',    color: '#FF9500', icon: '🍔', order: 6 },
+  { id: 'cat-restaurant',   name: 'Restaurant',    color: '#FF3B30', icon: '🍔', order: 6 },
   { id: 'cat-shopping',     name: 'Shopping',      color: '#5856D6', icon: '👕', order: 7 },
   { id: 'cat-abonnements',  name: 'Abonnements',   color: '#5AC8FA', icon: '📱', order: 8 },
   { id: 'cat-epargne',      name: 'Epargne',       color: '#FFD60A', icon: '🐷', order: 9 },
