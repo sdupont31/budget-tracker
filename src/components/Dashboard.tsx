@@ -184,9 +184,9 @@ export function Dashboard() {
           color: '#007AFF', fontSize: 24, padding: '0 8px', lineHeight: 1,
         }}>‹</button>
         <span style={{
-          fontSize: 13, fontWeight: 600, color: '#8E8E93',
-          letterSpacing: '0.06em', textTransform: 'uppercase',
-          minWidth: 140, textAlign: 'center', fontFamily: font,
+          fontSize: 17, fontWeight: 600, color: '#8E8E93',
+          letterSpacing: '0.04em', textTransform: 'uppercase',
+          minWidth: 160, textAlign: 'center', fontFamily: font,
         }}>
           {format(new Date(selectedMonth + '-01'), 'MMMM yyyy', { locale: fr })}
         </span>
@@ -200,8 +200,8 @@ export function Dashboard() {
 
       {/* Grand total */}
       <div style={{
-        fontSize: 48, fontWeight: 700, letterSpacing: '-0.03em',
-        color: '#000000', lineHeight: 1, marginBottom: 8, fontFamily: font,
+        fontSize: 34, fontWeight: 700, letterSpacing: '-0.02em',
+        color: '#000000', lineHeight: 1.1, marginBottom: 8, fontFamily: font,
       }}>
         {total.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
       </div>
