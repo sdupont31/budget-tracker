@@ -5,7 +5,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { format, startOfMonth, subMonths, eachMonthOfInterval } from 'date-fns';
+import { format, startOfMonth, subMonths, addMonths, eachMonthOfInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { db, getBudgetForMonth } from '../db/database';
 import { KpiCard } from './KpiCard';
@@ -92,9 +92,17 @@ const ActiveDot = (props: any) => {
 /* ── Dashboard ───────────────────────────────────────────────────────────── */
 
 export function Dashboard() {
-  const now           = new Date();
-  const currentMonth  = monthKey(now);
-  const previousMonth = monthKey(subMonths(now, 1));
+  const now = new Date();
+
+  const [selectedMonth, setSelectedMonth] = useState<string>(format(now, 'yyyy-MM'));
+
+  const prevMonth = () => setSelectedMonth(
+    format(subMonths(new Date(selectedMonth + '-01'), 1), 'yyyy-MM')
+  );
+  const nextMonth = () => {
+    const next = format(addMonths(new Date(selectedMonth + '-01'), 1), 'yyyy-MM');
+    if (next <= format(now, 'yyyy-MM')) setSelectedMonth(next);
+  };
 
   const allExpenses   = useLiveQuery(() => db.expenses.toArray(),   []) ?? [];
   const allCategories = useLiveQuery(() => db.categories.toArray(), []) ?? [];
@@ -107,8 +115,9 @@ export function Dashboard() {
     pieData, lineBase, months, topCategory, totalBudget,
   } = useMemo(() => {
     const categoryMap = new Map<string, Category>(allCategories.map((c) => [c.id!, c]));
+    const previousMonth = monthKey(subMonths(new Date(selectedMonth + '-01'), 1));
 
-    const thisMonthExpenses = allExpenses.filter((e) => e.date.startsWith(currentMonth));
+    const thisMonthExpenses = allExpenses.filter((e) => e.date.startsWith(selectedMonth));
     const total             = thisMonthExpenses.reduce((s, e) => s + e.amount, 0);
     const lastMonthTotal    = allExpenses
       .filter((e) => e.date.startsWith(previousMonth))
@@ -145,7 +154,7 @@ export function Dashboard() {
 
     return { thisMonthExpenses, total, variation, pieData, lineBase, months, topCategory, totalBudget };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allExpenses, allCategories, currentMonth, previousMonth]);
+  }, [allExpenses, allCategories, selectedMonth]);
 
   // Load budget for each of the 6 months asynchronously
   useEffect(() => {
@@ -160,7 +169,7 @@ export function Dashboard() {
 
   const [activePieIndex, setActivePieIndex] = useState<number | undefined>(undefined);
 
-  const monthLabel     = cap(format(now, 'MMMM yyyy', { locale: fr }));
+  const isCurrentMonth = selectedMonth >= format(now, 'yyyy-MM');
   const hasExpenses    = thisMonthExpenses.length > 0;
   const remaining      = totalBudget > 0 ? totalBudget - total : null;
   const variationColor = variation === null ? '#8E8E93' : variation > 0 ? '#FF3B30' : '#34C759';
@@ -171,12 +180,24 @@ export function Dashboard() {
   /* ── Header ─────────────────────────────────────────────────────────────── */
   const header = (
     <div style={{ maxWidth: 480, margin: '0 auto', padding: '60px 20px 20px', textAlign: 'center' }}>
-      <p style={{
-        fontSize: 13, fontWeight: 600, textTransform: 'uppercase',
-        letterSpacing: '0.06em', color: '#8E8E93', fontFamily: font, margin: '0 0 4px',
-      }}>
-        {monthLabel}
-      </p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 4 }}>
+        <button onClick={prevMonth} style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: '#007AFF', fontSize: 20, padding: '0 8px',
+        }}>‹</button>
+        <span style={{
+          fontSize: 13, fontWeight: 600, color: '#8E8E93',
+          letterSpacing: '0.06em', textTransform: 'uppercase',
+          minWidth: 120, textAlign: 'center', fontFamily: font,
+        }}>
+          {format(new Date(selectedMonth + '-01'), 'MMMM yyyy', { locale: fr })}
+        </span>
+        <button onClick={nextMonth} disabled={isCurrentMonth} style={{
+          background: 'none', border: 'none', cursor: isCurrentMonth ? 'default' : 'pointer',
+          color: isCurrentMonth ? '#C7C7CC' : '#007AFF',
+          fontSize: 20, padding: '0 8px',
+        }}>›</button>
+      </div>
       <p style={{
         fontSize: 34, fontWeight: 700, letterSpacing: '-0.02em',
         color: '#000000', fontFamily: font, margin: '0 0 4px', lineHeight: 1.1,
