@@ -41,15 +41,16 @@ export const db = new BudgetDatabase();
 /* ── Default categories ──────────────────────────────────────────────────── */
 
 const DEFAULT_CATEGORIES: Category[] = [
-  { id: 'cat-alimentation', name: 'Alimentation', color: '#FF9500', icon: '🍔', order: 1 },
+  { id: 'cat-alimentation', name: 'Courses',      color: '#FF9500', icon: '🛒', order: 1 },
   { id: 'cat-logement',     name: 'Logement',     color: '#007AFF', icon: '🏠', order: 2 },
   { id: 'cat-transport',    name: 'Transport',     color: '#34C759', icon: '🚗', order: 3 },
   { id: 'cat-sante',        name: 'Santé',         color: '#FF2D55', icon: '🏥', order: 4 },
   { id: 'cat-loisirs',      name: 'Loisirs',       color: '#AF52DE', icon: '🎭', order: 5 },
-  { id: 'cat-shopping',     name: 'Shopping',      color: '#5856D6', icon: '👕', order: 6 },
-  { id: 'cat-abonnements',  name: 'Abonnements',   color: '#5AC8FA', icon: '📱', order: 7 },
-  { id: 'cat-epargne',      name: 'Epargne',       color: '#FFD60A', icon: '🐷', order: 8 },
-  { id: 'cat-autres',       name: 'Autres',        color: '#8E8E93', icon: '💰', order: 9 },
+  { id: 'cat-restaurant',   name: 'Restaurant',    color: '#FF9500', icon: '🍔', order: 6 },
+  { id: 'cat-shopping',     name: 'Shopping',      color: '#5856D6', icon: '👕', order: 7 },
+  { id: 'cat-abonnements',  name: 'Abonnements',   color: '#5AC8FA', icon: '📱', order: 8 },
+  { id: 'cat-epargne',      name: 'Epargne',       color: '#FFD60A', icon: '🐷', order: 9 },
+  { id: 'cat-autres',       name: 'Autres',        color: '#8E8E93', icon: '💰', order: 10 },
 ];
 
 export async function seedDatabase(): Promise<void> {
@@ -88,6 +89,31 @@ export async function seedDatabase(): Promise<void> {
       if (def && cat.color !== def.color) {
         await db.categories.update(cat.id!, { color: def.color });
       }
+    }
+
+    // Migration : renommage Alimentation → Courses
+    const alimentation = await db.categories.where('id').equals('cat-alimentation').first();
+    if (alimentation && alimentation.name === 'Alimentation') {
+      await db.categories.update('cat-alimentation', { name: 'Courses', icon: '🛒' });
+    }
+
+    // Ajout Restaurant si absent
+    const restaurant = await db.categories.where('id').equals('cat-restaurant').first();
+    if (!restaurant) {
+      await db.categories.add({
+        id: 'cat-restaurant', name: 'Restaurant', color: '#FF9500', icon: '🍔', order: 6,
+      });
+    }
+
+    // Mise à jour des orders des catégories existantes
+    const orderUpdates: Record<string, number> = {
+      'cat-shopping':    7,
+      'cat-abonnements': 8,
+      'cat-epargne':     9,
+      'cat-autres':      10,
+    };
+    for (const [id, order] of Object.entries(orderUpdates)) {
+      await db.categories.update(id, { order });
     }
   } catch (e) {
     console.error('seedDatabase error:', e);
