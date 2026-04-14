@@ -7,6 +7,7 @@ export type CategoryColor =
   | '#AF52DE' // purple
   | '#5856D6' // indigo
   | '#5AC8FA' // teal
+  | '#FFD60A' // yellow
   | '#8E8E93'; // gray
 
 export interface Category {

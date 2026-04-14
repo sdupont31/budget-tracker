@@ -48,7 +48,7 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: 'cat-loisirs',      name: 'Loisirs',       color: '#AF52DE', icon: '🎭', order: 5 },
   { id: 'cat-shopping',     name: 'Shopping',      color: '#5856D6', icon: '👕', order: 6 },
   { id: 'cat-abonnements',  name: 'Abonnements',   color: '#5AC8FA', icon: '📱', order: 7 },
-  { id: 'cat-epargne',      name: 'Epargne',       color: '#34C759', icon: '🐷', order: 8 },
+  { id: 'cat-epargne',      name: 'Epargne',       color: '#FFD60A', icon: '🐷', order: 8 },
   { id: 'cat-autres',       name: 'Autres',        color: '#8E8E93', icon: '💰', order: 9 },
 ];
 
@@ -77,6 +77,16 @@ export async function seedDatabase(): Promise<void> {
         await db.categories.delete(cat.id!);
       } else {
         seen.add(cat.name);
+      }
+    }
+
+    // Sync colors: ensure each category matches its DEFAULT_CATEGORIES color
+    const defaultById = new Map(DEFAULT_CATEGORIES.map((c) => [c.id!, c]));
+    const current = await db.categories.toArray();
+    for (const cat of current) {
+      const def = defaultById.get(cat.id!);
+      if (def && cat.color !== def.color) {
+        await db.categories.update(cat.id!, { color: def.color });
       }
     }
   } catch (e) {
